@@ -35,7 +35,7 @@
     "build-electron": "electron-builder"
   },
   "build": {
-    "appId": "com.xxx.xxx",
+    "appId": "com.example.my-app",
     "productName": "react-electron",
     "extends": null,
     "directories": {
@@ -48,6 +48,10 @@
     ],
     "win": {
       "icon": "src/asset/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   },
   "eslintConfig": {
