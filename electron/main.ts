@@ -21,7 +21,7 @@ function createWindow() {
     const startUrl =
         process.env.NODE_ENV === 'development'
             ? 'http://localhost:3000'
-            : path.join(__dirname, '../index.html');
+            : path.join(__dirname, 'index.html');
     mainWindow.loadURL(startUrl);
 
 

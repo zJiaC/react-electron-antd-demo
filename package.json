@@ -2,7 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
-  "main": "./build/electron/main.js",
+  "main": "./build/main.js",
   "homepage": "./",
   "devDependencies": {
     "electron": "^19.0.6",
@@ -28,8 +28,7 @@
   "scripts": {
     "prestart": "tsc -p electron",
     "start": "cross-env BROWSER=none react-app-rewired start",
-    "build": "react-app-rewired build",
-    "build:tsc": "react-app-rewired build & tsc -p electron",
+    "build": "react-app-rewired build & tsc -p electron",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "start-electron": "cross-env NODE_ENV=development electron .",
