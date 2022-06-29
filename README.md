@@ -1,23 +1,25 @@
+
 # Electron React Typescript Antd 环境搭建
 
 ## 前言
 
 - 参考文章： [electron + react + typescript 环境搭建](https://yyccyy.com/2019/11/13/electron-react-typescript-build/)
 - 最近打算 Electron React Typescript Antd 结合学习,自己重新整理了下
-    - 修复 electron 启动界面加载空白
-    - 修复版本差异导致的调用 electron 的 dialog 错误
-    - 同时调整 main.js 和 preload.js 为 typescript 实现
+  - 修复 electron 启动界面加载空白
+  - 修复版本差异导致的调用 electron 的 dialog 错误
 
+## 基本环境搭建
 
-### 基本环境搭建
+### 创建 react + typescript 项目
 
-#### 创建 react + typescript 项目
 > yarn create react-app --template typescript
 
-#### 安装 react-app-rewired 以及 cross-env
+### 安装 react-app-rewired 以及 cross-env
+
 > yarn add react-app-rewired cross-env -D
 
-#### 创建 react-app-rewired 配置文件 config-overrides.js 用于扩展 webpack 配置
+### 创建 react-app-rewired 配置文件 config-overrides.js 用于扩展 webpack 配置
+
 ```javascript
 module.exports = (config, env) => {
     // 为了方便使用 electron 以及 node.js 相关的 api
@@ -30,14 +32,18 @@ module.exports = (config, env) => {
 };
 ```
 
-#### 安装 electron 环境
+### 安装 electron 环境
+
 > yarn add electron -D
+
 - 这里加 -D 是为了只添加到 package.json 下的 devDependencies
 - 如果 electron 存在 dependencies 里面在后续使用 electron-builder 会出现报错情况
 
-#### 创建 electron 环境
+### 创建 electron 环境
+
 - 新建 electron 文件夹
-    - 新建 tsconfig.json
+  - 新建 tsconfig.json
+
 ```json
 {
   "compilerOptions": {
@@ -54,9 +60,11 @@ module.exports = (config, env) => {
   }
 }
 ```
+
 - 新建 electron 入库文件 main.ts
+
 ```typescript
-import { app, BrowserWindow,ipcMain,dialog } from "electron";
+import {app, BrowserWindow, ipcMain, dialog} from "electron";
 import * as path from "path";
 
 function createWindow() {
@@ -130,11 +138,13 @@ ipcMain.on('open-file-dialog', (event, data) => {
         .catch(console.log);
 });
 ```
+
 - 新建预加载文件 preload.ts
-    - 若是不添加则会出现空白情况
+  - 若是不添加则会出现空白情况
+
 ```typescript
 window.addEventListener('DOMContentLoaded', () => {
-    const replaceText = (selector : string , text : string) => {
+    const replaceText = (selector: string, text: string) => {
         const element = document.getElementById(selector)
         if (element) element.innerText = text
     }
@@ -146,8 +156,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ```
 
-#### 添加相关脚本
+### 添加相关脚本
+
 - /package.json
+
 ```json
 {
   "scripts": {
@@ -164,121 +176,142 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ```
 
-#### 添加 electron 及 node.js 相关代码，用于测试是否集成完毕
+### 添加 electron 及 node.js 相关代码，用于测试是否集成完毕
+
 - /src/App.css
+
 ```css
 @import '~antd/dist/antd.css';
+
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+    height: 40vmin;
+    pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+    .App-logo {
+        animation: App-logo-spin infinite 20s linear;
+    }
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 ```
+
 - /src/App.tsx
+
 ```typescript
 import React from 'react';
 import fs from 'fs';
-import { Button } from 'antd';
+import {Button} from 'antd';
 import './App.css';
-const { ipcRenderer} = require('electron')
 
-interface Props {}
+const {ipcRenderer} = require('electron')
+
+interface Props {
+}
 
 interface State {
-  txtFileData: string;
+    txtFileData: string;
 }
 
 export default class App extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      txtFileData: '',
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            txtFileData: '',
+        };
+    }
+
+    /**
+     * 弹出文件选择框，选择 .txt 文件
+     * 将选中的 .txt 内容展示到页面
+     */
+    public readTxtFileData = async () => {
+        // 发送事件给主进程
+        ipcRenderer.send('open-file-dialog', '传输给主进程的值');
+
+        // 监听主进程发来的事件
+        ipcRenderer.on('open-file-dialog', (event: any, data: Array<string>) => {
+            if (!data[0]) return;
+            fs.readFile(data[0], 'utf-8', (err, data) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    this.setState({
+                        txtFileData: data.replace(/\n|\r\n/g, '<br/>'),
+                    });
+                }
+            });
+        })
+
     };
-  }
 
-  /**
-   * 弹出文件选择框，选择 .txt 文件
-   * 将选中的 .txt 内容展示到页面
-   */
-  public readTxtFileData = async () => {
-    // 发送事件给主进程
-    ipcRenderer.send('open-file-dialog', '传输给主进程的值');
-
-    // 监听主进程发来的事件
-    ipcRenderer.on('open-file-dialog', (event : any, data : Array<string>) => {
-      if (!data[0]) return;
-      fs.readFile(data[0], 'utf-8', (err, data) => {
-        if (err) {
-          console.error(err);
-        } else {
-          this.setState({
-            txtFileData: data.replace(/\n|\r\n/g, '<br/>'),
-          });
+    public render = (): JSX.Element => {
+        return (
+            <section>
+                <Button type = {"primary"}
+        onClick = {this.readTxtFileData} > 读取一个txt文件的内容 < /Button>
+            < div
+        dangerouslySetInnerHTML = {
+        {
+            __html: this.state.txtFileData
         }
-      });
-    })
-
-  };
-
-  public render = (): JSX.Element => {
-    return (
-        <section>
-          <Button type={"primary"} onClick={this.readTxtFileData}>读取一个txt文件的内容</Button>
-          <div dangerouslySetInnerHTML={{ __html: this.state.txtFileData }} />
-        </section>
-    );
-  };
+    }
+        />
+        < /section>
+    )
+        ;
+    };
 }
 ```
 
-#### 运行测试
+### 运行测试
+
 - 一个命令行窗口跑 react 项目
+
 > yarn start
 
 - 另一个命令行窗口跑 electron 项目
+
 > yarn start-electron
 
-#### 项目打包
+### 项目打包
+
 - 添加 electron-builder 工具
+
 > yarn add electron-builder -D
 
 - 添加脚本以及打包相关配置
-    - oneClick 是否启用一键安装
-    - allowToChangeInstallationDirectory 是否允许修改安装路径
+  - oneClick 是否启用一键安装
+  - allowToChangeInstallationDirectory 是否允许修改安装路径
+
 ```json
 {
   "build": {
@@ -303,15 +336,20 @@ export default class App extends React.Component<Props, State> {
 }
 ```
 
-#### 开始打包
+## 开始打包
+
 - 打包 react
+
 > yarn build
 
 - react 打包完成后，可以运行 electron 生产环境查看一下功能是否正常运行
+
 > yarn start-electron-prod
 
 - 打包 electron 项目为安装包，安装包会生成到指定的 build-electron 目录
+
 > yarn build-electron
 
-#### Github
+## Github
+
 [react-electron-antd-demo](https://github.com/zJiaC/react-electron-antd-demo)
